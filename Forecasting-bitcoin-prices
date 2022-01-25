@@ -299,4 +299,28 @@ model3 <- bsts(Close ~ ., state.specification = ss,
                data = as.data.frame(Train),
                expected.model.size = 10)
 CompareBstsModels(list("Model 1" = model1, "Model 2" = model2, "Model 3" = model3), colors = c("blue", "red", "green"))
+
+import urllib.request as urllib2
+import pandas as pd
+import csv
+import datetime
+from bs4 import BeautifulSoup
+
+today = datetime.date.today()
+mktcap_page = 'https://coinmarketcap.com/currencies/bitcoin/historical-data/?start=20130428&amp;end='+"{:%Y%m%d}".format(today)
+page = urllib2.urlopen(mktcap_page)
+soup = BeautifulSoup(page, 'html.parser')
+table = soup.find("table")
+headings = [th.get_text().strip() for th in table.find("tr").find_all("th")]
+datasets = []
+
+for row in table.find_all("tr")[1:]:
+    dataset = dict(zip(headings, (td.get_text() for td in row.find_all("td"))))
+    datasets.append(dataset)
+
+csvfile = 'train.csv'
+my_df = pd.DataFrame(datasets)
+df = my_df.set_index('Date')
+km = df[['Open', 'High', 'Low', 'Close', 'Volume', 'Market Cap']]
+km.to_csv(csvfile, index=True, header=True)
                                
