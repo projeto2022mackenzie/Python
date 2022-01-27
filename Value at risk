@@ -1,0 +1,22 @@
+def var_parametric(portofolioReturns, portfolioStd, distribution='normal', alpha=5, dof=6):
+    # because the distribution is symmetric
+    if distribution == 'normal':
+        VaR = norm.ppf(1-alpha/100)*portfolioStd - portofolioReturns
+    elif distribution == 't-distribution':
+        nu = dof
+        VaR = np.sqrt((nu-2)/nu) * t.ppf(1-alpha/100, nu) * portfolioStd - portofolioReturns
+    else:
+        raise TypeError("Expected distribution type 'normal'/'t-distribution'")
+    return VaR
+ 
+
+def cvar_parametric(portofolioReturns, portfolioStd, distribution='normal', alpha=5, dof=6):
+    if distribution == 'normal':
+        CVaR = (alpha/100)**-1 * norm.pdf(norm.ppf(alpha/100))*portfolioStd - portofolioReturns
+    elif distribution == 't-distribution':
+        nu = dof
+        xanu = t.ppf(alpha/100, nu)
+        CVaR = -1/(alpha/100) * (1-nu)**(-1) * (nu-2+xanu**2) * t.pdf(xanu, nu) * portfolioStd - portofolioReturns
+    else:
+        raise TypeError("Expected distribution type 'normal'/'t-distribution'")
+    return CVaR
